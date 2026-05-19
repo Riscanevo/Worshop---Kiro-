@@ -25,8 +25,16 @@ declare module '@radix-ui/react-toast'
 declare module '@radix-ui/react-toggle'
 declare module '@radix-ui/react-toggle-group'
 declare module '@radix-ui/react-tooltip'
-declare module 'class-variance-authority'
-declare module 'clsx'
+declare module 'class-variance-authority' {
+  export type VariantProps<T> = T extends (...args: any[]) => any ? Record<string, any> : never
+  export function cva(...args: any[]): (...args: any[]) => string
+}
+
+declare module 'clsx' {
+  export type ClassValue = any
+  export function clsx(...inputs: ClassValue[]): string
+  export default clsx
+}
 declare module 'cmdk'
 declare module 'embla-carousel-react'
 declare module 'input-otp'
