@@ -1,49 +1,48 @@
-import { Toast } from 'primereact/toast'
-import { Suspense, lazy, useRef } from 'react'
-import Header from './components/layout/Header'
-import ProductCatalog from './components/products/ProductCatalog'
-import ShoppingCart from './components/cart/ShoppingCart'
-import { usePOSStore } from './store/posStore'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { useEffect } from 'react'
+import { useAuthStore } from './store/authStore'
+import { initializeHttpInterceptor } from './services/httpInterceptor'
+import ProtectedRoute from './components/auth/ProtectedRoute'
+import PublicRoute from './components/auth/PublicRoute'
+import LoginPage from './components/pages/LoginPage'
+import POSPage from './components/pages/POSPage'
+import UnauthorizedPage from './components/pages/UnauthorizedPage'
+import DevToolsPanel from './components/devtools/DevToolsPanel'
 
-const CheckoutDialog = lazy(() => import('./components/checkout/CheckoutDialog'))
-const ReceiptDialog = lazy(() => import('./components/receipt/ReceiptDialog'))
+// Inicializar interceptor HTTP solo en desarrollo
+if (import.meta.env.DEV) {
+  initializeHttpInterceptor()
+}
 
 function App() {
-  const toast = useRef<Toast>(null)
-  const { currentReceipt, setCurrentReceipt, isCheckoutOpen } = usePOSStore()
+  const { checkAuth } = useAuthStore()
+
+  useEffect(() => {
+    void checkAuth()
+  }, [checkAuth])
 
   return (
-    <div className="flex flex-column h-full" style={{ backgroundColor: 'var(--pos-bg-primary)' }}>
-      <Toast ref={toast} position="top-right" />
+    <BrowserRouter>
+      <Routes>
+        {/* Rutas públicas */}
+        <Route element={<PublicRoute />}>
+          <Route path="/login" element={<LoginPage />} />
+        </Route>
 
-      <Header />
+        {/* Rutas protegidas */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/pos" element={<POSPage />} />
+          <Route path="/unauthorized" element={<UnauthorizedPage />} />
+          <Route path="/" element={<Navigate to="/pos" replace />} />
+        </Route>
 
-      <main className="pos-main-layout flex flex-1 overflow-hidden gap-3 p-3">
-        <section className="pos-catalog-panel flex-1 overflow-hidden">
-          <ProductCatalog toast={toast} />
-        </section>
+        {/* Fallback */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
 
-        <aside className="pos-cart-panel">
-          <ShoppingCart />
-        </aside>
-      </main>
-
-      {isCheckoutOpen && (
-        <Suspense fallback={null}>
-          <CheckoutDialog />
-        </Suspense>
-      )}
-
-      {currentReceipt && (
-        <Suspense fallback={null}>
-          <ReceiptDialog
-            visible={currentReceipt !== null}
-            transaction={currentReceipt}
-            onClose={() => setCurrentReceipt(null)}
-          />
-        </Suspense>
-      )}
-    </div>
+      {/* Developer Tools — solo visible en desarrollo */}
+      <DevToolsPanel />
+    </BrowserRouter>
   )
 }
 

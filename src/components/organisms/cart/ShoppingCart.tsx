@@ -1,9 +1,9 @@
 import { Button } from 'primereact/button'
 import { Divider } from 'primereact/divider'
-import { usePOSStore } from '../../store/posStore'
-import CartItem from '../molecules/cart/CartItem'
+import { usePOSStore } from '../../../store/posStore'
+import CartItem from '../../molecules/cart/CartItem'
 import CartSummary from './CartSummary'
-import DiscountInput from '../molecules/cart/DiscountInput'
+import DiscountInput from '../../molecules/cart/DiscountInput'
 
 export default function ShoppingCart() {
   const { cart, clearCart, getCartCount, openCheckout } = usePOSStore()
@@ -28,12 +28,7 @@ export default function ShoppingCart() {
         <div className="flex align-items-center gap-3">
           <div
             className="flex align-items-center justify-content-center"
-            style={{
-              width: '40px',
-              height: '40px',
-              borderRadius: '12px',
-              backgroundColor: 'var(--pos-accent)',
-            }}
+            style={{ width: '40px', height: '40px', borderRadius: '12px', backgroundColor: 'var(--pos-accent)' }}
           >
             <i className="pi pi-shopping-cart text-white text-lg"></i>
           </div>
@@ -83,17 +78,11 @@ export default function ShoppingCart() {
       {!isEmpty && (
         <div
           className="flex flex-column p-4"
-          style={{
-            borderTop: '1px solid var(--pos-border)',
-            backgroundColor: 'var(--pos-bg-tertiary)',
-          }}
+          style={{ borderTop: '1px solid var(--pos-border)', backgroundColor: 'var(--pos-bg-tertiary)' }}
         >
           <DiscountInput />
-
           <Divider className="my-3" style={{ borderColor: 'var(--pos-border)' }} />
-
           <CartSummary />
-
           <Button
             label="Procesar Pago"
             className="w-full mt-4"
@@ -107,7 +96,6 @@ export default function ShoppingCart() {
             }}
             onClick={openCheckout}
           />
-
           <div
             className="flex align-items-center justify-content-center gap-3 mt-3"
             style={{ color: 'var(--pos-text-secondary)' }}

@@ -66,3 +66,41 @@ export interface CategoryInfo {
   icon: string
   color: string
 }
+
+// Authentication types
+export interface User {
+  id: string
+  username: string
+  name: string
+  role: 'admin' | 'cashier' | 'supervisor'
+  email?: string
+}
+
+export interface AuthState {
+  user: User | null
+  token: string | null
+  isAuthenticated: boolean
+  isLoading: boolean
+  error: string | null
+}
+
+// Request Logger types
+export interface RequestLog {
+  id: string
+  timestamp: number
+  method: string
+  url: string
+  requestHeaders: Record<string, string>
+  requestBody?: unknown
+  responseStatus?: number
+  responseHeaders?: Record<string, string>
+  responseBody?: unknown
+  duration?: number
+  error?: Error
+}
+
+export interface LogFilters {
+  method?: string
+  status?: number
+  search?: string
+}
