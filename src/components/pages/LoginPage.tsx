@@ -105,7 +105,7 @@ export default function LoginPage() {
             />
           </div>
 
-          <div className="mb-4">
+          <div className="mb-4 p-fluid">
             <label
               htmlFor="password"
               className="block mb-2 text-sm font-medium"
@@ -127,9 +127,8 @@ export default function LoginPage() {
                 backgroundColor: 'var(--pos-bg-tertiary)',
                 border: '1px solid var(--pos-border)',
                 color: 'var(--pos-text-primary)',
-                padding: '0.4rem 1rem',  
-                fontSize: '1rem'
-                
+                padding: '0.4rem 1rem',
+                fontSize: '1rem',
               }}
             />
           </div>

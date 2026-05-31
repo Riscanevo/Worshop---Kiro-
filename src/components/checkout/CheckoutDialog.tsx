@@ -32,7 +32,7 @@ export default function CheckoutDialog() {
     // Simulate payment processing
     await new Promise((resolve) => setTimeout(resolve, 1500))
 
-    processPayment(paymentMethod, {
+    await processPayment(paymentMethod, {
       method: paymentMethod,
       amountPaid: paymentMethod === 'efectivo' ? cashAmount : total,
       change: paymentMethod === 'efectivo' ? change : undefined,

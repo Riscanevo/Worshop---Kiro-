@@ -7,13 +7,14 @@
 - PrimeReact + PrimeFlex for UI
 
 ## Architecture
-Single-page frontend with local in-memory state. Product data comes from a local static module.
+Single-page frontend with local cart state and backend-backed product/sales integration. Product data comes from the API Gateway, and completed sales are persisted through the sales API.
 
 Layers:
 1. Presentation layer (`src/components/**`)
 2. State/business layer (`src/store/posStore.ts`)
 3. Domain types (`src/types/index.ts`)
-4. Local data source (`src/data/products.ts`)
+4. API configuration (`src/config/api.ts`)
+5. Backend repositories (`src/infrastructure/catalog/catalogRepository.ts`, `src/infrastructure/sales/salesRepository.ts`)
 
 ## Component Design
 
@@ -42,12 +43,13 @@ Layers:
 - Derived totals (subtotal, tax, discount, grand total)
 
 ## Data Flow
-1. User searches/selects category -> catalog filtering in component state.
-2. User adds product -> `addToCart` store action.
-3. User edits cart -> quantity/remove actions update derived totals.
-4. User applies discount -> `applyDiscount`.
-5. User checks out -> `processPayment` creates immutable transaction.
-6. Receipt dialog reads transaction and renders output.
+1. Product catalog loads `GET /productos` through `catalogRepository`.
+2. User searches/selects category -> catalog filtering in component state.
+3. User adds product -> `addToCart` store action.
+4. User edits cart -> quantity/remove actions update derived totals.
+5. User applies discount -> `applyDiscount`.
+6. User checks out -> `processPayment` creates immutable transaction and registers it with `POST /ventas`.
+7. Receipt dialog reads transaction and renders output after the backend confirms the sale.
 
 ## Barcode Camera Flow
 1. User clicks camera button in `BarcodeScanner`.
@@ -56,16 +58,21 @@ Layers:
 4. On successful detection, scanner submits barcode and closes camera.
 5. On unsupported browser or permission error, toast warning is shown and manual input remains available.
 
-## Offline Strategy
-- Product catalog is bundled statically (`products.ts`) with no runtime API dependency.
-- Cart and checkout logic are pure client-side computations.
+## API Strategy
+- The API Gateway base URL is centralized in `src/config/api.ts`.
+- `VITE_API_BASE_URL` controls the target API environment.
+- Product catalog is loaded from `GET /productos`.
+- Sales are registered with `POST /ventas`.
+- Cart and pricing calculations remain client-side for responsive cashier interaction.
 - External product images are non-blocking; failures must not block cart/checkout.
 
 ## Error Handling
 - Unknown barcode -> warning toast.
 - Camera unsupported/permission denied -> warning toast with fallback guidance.
 - Invalid payment input -> inline validation in checkout dialog.
+- Products API failure -> error toast and retry state.
+- Sales API failure -> error toast and cart is preserved.
 
 ## Tradeoffs
-- No backend persistence for transactions by design (workshop scope).
+- Backend must expose `GET /productos` and `POST /ventas`.
 - Browser barcode detection depends on client support; fallback is manual barcode entry.

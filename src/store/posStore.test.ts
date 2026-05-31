@@ -6,6 +6,10 @@ vi.mock('uuid', () => ({
   v4: () => 'test-transaction-id',
 }))
 
+vi.mock('../infrastructure/sales/salesRepository', () => ({
+  registerSale: vi.fn().mockResolvedValue(undefined),
+}))
+
 const productWithTax: Product = {
   id: 'product-1',
   name: 'Leche',
@@ -80,11 +84,11 @@ describe('usePOSStore pricing', () => {
 })
 
 describe('usePOSStore payments', () => {
-  it('creates a transaction and clears the cart after payment', () => {
+  it('creates a transaction and clears the cart after payment', async () => {
     const store = usePOSStore.getState()
     store.addToCart(productWithoutTax, 2)
 
-    const transaction = store.processPayment('efectivo', {
+    const transaction = await store.processPayment('efectivo', {
       method: 'efectivo',
       amountPaid: 20,
       change: 10,

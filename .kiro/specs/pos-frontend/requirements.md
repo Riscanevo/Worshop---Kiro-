@@ -1,7 +1,7 @@
 # POS Frontend Requirements
 
 ## Scope
-Build a supermarket Point of Sale (POS) frontend that allows a cashier to search products, scan barcodes, manage a cart, apply discounts and taxes, complete checkout, and generate a digital receipt. Core operations must work without backend connectivity.
+Build a supermarket Point of Sale (POS) frontend that allows a cashier to load products from the backend, search products, scan barcodes, manage a cart, apply discounts and taxes, complete checkout, register sales through the API, and generate a digital receipt.
 
 ## Actors
 - Cashier
@@ -13,10 +13,12 @@ Build a supermarket Point of Sale (POS) frontend that allows a cashier to search
 As a cashier, I want to find products quickly by name and category.
 
 Acceptance criteria:
-- The app shows a product catalog with cards and category filters.
+- The app consumes `GET /productos` from the API Gateway to populate the product catalog.
+- The app shows each product with at least name, price, and a selection/add action.
 - Typing in the search field filters products by product name.
 - Category selection filters products by category.
 - Search and category filters can be combined.
+- If the products API fails or returns an error status, the app shows a friendly error message and a retry option.
 
 ### FR-2 Barcode Scanning
 As a cashier, I want to add products using barcode scanning.
@@ -52,7 +54,10 @@ Acceptance criteria:
 - Checkout supports at least cash and card.
 - Cash payment validates paid amount and calculates change.
 - Card payment captures last four digits.
-- Completing payment creates a transaction with timestamp and receipt number.
+- Completing payment registers the sale with `POST /ventas`.
+- The sale payload includes selected products, quantities, totals, payment method, timestamp, and receipt number.
+- If the sales API succeeds, the app shows a success message and clears the cart.
+- If the sales API fails or returns an error status, the app shows an error message and keeps the cart available.
 
 ### FR-6 Digital Receipt
 As a cashier, I want a clear receipt I can show to the customer.
@@ -62,12 +67,13 @@ Acceptance criteria:
 - Receipt includes payment method and payment-specific details.
 - Receipt includes generated receipt number and transaction date/time.
 
-### FR-7 Offline Core Operation
-As a cashier, I want essential POS actions to work offline.
+### FR-7 API Configuration
+As a developer, I want the API Gateway base URL to be configurable, so deployments can point to different environments.
 
 Acceptance criteria:
-- Product data is locally available without live API calls.
-- Search, filtering, barcode manual entry, and cart operations do not depend on network.
+- The API Gateway base URL is defined in a configuration module or environment variable.
+- API calls use the shared configuration instead of hardcoding the base URL in each request.
+- The frontend supports `VITE_API_BASE_URL` for environment-specific configuration.
 - If external assets fail (e.g., product images), the UI still allows checkout workflow.
 
 ## Non-Functional Requirements

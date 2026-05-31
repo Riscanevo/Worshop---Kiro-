@@ -262,7 +262,7 @@ Estas mejoras mantendrán la funcionalidad existente del POS mientras añaden ca
 --pos-warning: #f59e0b
 --pos-danger: #ef4444
 --pos-text-primary: #f8fafc
---pos-text-secondary: #94a3b8
+--pos-text-secondary: #f8fafc
 --pos-border: #475569
 ```
 

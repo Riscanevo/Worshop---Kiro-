@@ -1,7 +1,7 @@
-import { useState, useMemo, RefObject } from 'react'
+import { useState, useMemo, RefObject, useEffect } from 'react'
 import { InputText } from 'primereact/inputtext'
 import { Toast } from 'primereact/toast'
-import { ProductCategory } from '../../../types'
+import { Product, ProductCategory } from '../../../types'
 import CategoryFilter from './CategoryFilter'
 import ProductGrid from './ProductGrid'
 import BarcodeScanner from './BarcodeScanner'
@@ -9,6 +9,7 @@ import { usePOSStore } from '../../../store/posStore'
 import {
   findProductByBarcode,
   getCategories,
+  getProducts,
   searchProducts,
 } from '../../../infrastructure/catalog/catalogRepository'
 
@@ -18,17 +19,68 @@ interface ProductCatalogProps {
 
 export default function ProductCatalog({ toast }: ProductCatalogProps) {
   const categories = getCategories()
+  const [products, setProducts] = useState<Product[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<ProductCategory | 'all'>('all')
   const [barcodeInput, setBarcodeInput] = useState('')
+  const [isLoading, setIsLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
   const { addToCart } = usePOSStore()
 
+  const loadProducts = async () => {
+    setIsLoading(true)
+    setLoadError(null)
+
+    try {
+      setProducts(await getProducts())
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Error cargando productos'
+      setLoadError(message)
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Error de API',
+        detail: message,
+        life: 4000,
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    let isActive = true
+
+    void getProducts()
+      .then((nextProducts) => {
+        if (isActive) setProducts(nextProducts)
+      })
+      .catch((error: unknown) => {
+        if (!isActive) return
+
+        const message = error instanceof Error ? error.message : 'Error cargando productos'
+        setLoadError(message)
+        toast.current?.show({
+          severity: 'error',
+          summary: 'Error de API',
+          detail: message,
+          life: 4000,
+        })
+      })
+      .finally(() => {
+        if (isActive) setIsLoading(false)
+      })
+
+    return () => {
+      isActive = false
+    }
+  }, [toast])
+
   const filteredProducts = useMemo(() => {
-    return searchProducts({ searchTerm, category: selectedCategory })
-  }, [searchTerm, selectedCategory])
+    return searchProducts(products, { searchTerm, category: selectedCategory })
+  }, [products, searchTerm, selectedCategory])
 
   const handleBarcodeSubmit = (barcode: string) => {
-    const product = findProductByBarcode(barcode)
+    const product = findProductByBarcode(products, barcode)
     if (product) {
       addToCart(product)
       toast.current?.show({
@@ -100,7 +152,35 @@ export default function ProductCatalog({ toast }: ProductCatalogProps) {
       />
 
       <div className="flex-1 overflow-auto">
-        <ProductGrid products={filteredProducts} toast={toast} />
+        {isLoading ? (
+          <div
+            className="flex flex-column align-items-center justify-content-center h-full"
+            style={{ color: 'var(--pos-text-secondary)' }}
+          >
+            <i className="pi pi-spin pi-spinner text-5xl mb-3"></i>
+            <p className="text-lg font-semibold m-0">Cargando productos...</p>
+          </div>
+        ) : loadError ? (
+          <div
+            className="flex flex-column align-items-center justify-content-center h-full gap-3"
+            style={{ color: 'var(--pos-text-secondary)' }}
+          >
+            <i className="pi pi-exclamation-triangle text-5xl" style={{ color: 'var(--pos-danger)' }}></i>
+            <p className="text-lg font-semibold m-0">No se pudieron cargar los productos</p>
+            <button
+              type="button"
+              className="cursor-pointer border-none px-4 py-2 font-semibold"
+              style={{ backgroundColor: 'var(--pos-accent)', color: 'white', borderRadius: '10px' }}
+              onClick={() => {
+                void loadProducts()
+              }}
+            >
+              Reintentar
+            </button>
+          </div>
+        ) : (
+          <ProductGrid products={filteredProducts} toast={toast} />
+        )}
       </div>
 
       <div
@@ -113,7 +193,7 @@ export default function ProductCatalog({ toast }: ProductCatalogProps) {
       >
         <span style={{ color: 'var(--pos-text-secondary)' }}>
           <i className="pi pi-box mr-2"></i>
-          {filteredProducts.length} productos encontrados
+          {isLoading ? 'Cargando productos...' : `${filteredProducts.length} productos encontrados`}
         </span>
         {selectedCategory !== 'all' && (
           <button

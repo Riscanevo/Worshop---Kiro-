@@ -30,7 +30,7 @@ export default function POSPage() {
 
       {isCheckoutOpen && (
         <Suspense fallback={null}>
-          <CheckoutDialog />
+          <CheckoutDialog toast={toast} />
         </Suspense>
       )}
 

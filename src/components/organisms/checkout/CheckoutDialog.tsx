@@ -1,15 +1,20 @@
-import { useState } from 'react'
+import { RefObject, useState } from 'react'
 import { Dialog } from 'primereact/dialog'
 import { Button } from 'primereact/button'
 import { InputNumber } from 'primereact/inputnumber'
 import { RadioButton } from 'primereact/radiobutton'
 import { Divider } from 'primereact/divider'
+import { Toast } from 'primereact/toast'
 import { usePOSStore } from '../../../store/posStore'
 import { PaymentMethod } from '../../../types'
 import { calculateChange, isPaymentValid } from '../../../lib/payment'
 import { formatCurrency } from '../../../lib/currency'
 
-export default function CheckoutDialog() {
+interface CheckoutDialogProps {
+  toast: RefObject<Toast | null>
+}
+
+export default function CheckoutDialog({ toast }: CheckoutDialogProps) {
   const { isCheckoutOpen, closeCheckout, getTotal, processPayment, cart } = usePOSStore()
 
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('efectivo')
@@ -23,17 +28,36 @@ export default function CheckoutDialog() {
 
   const handlePayment = async () => {
     setIsProcessing(true)
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    processPayment(paymentMethod, {
-      method: paymentMethod,
-      amountPaid: paymentMethod === 'efectivo' ? cashAmount : total,
-      change: paymentMethod === 'efectivo' ? change : undefined,
-      cardLastFour: paymentMethod === 'tarjeta' ? cardLastFour : undefined,
-    })
-    setIsProcessing(false)
-    setCashAmount(0)
-    setCardLastFour('')
-    setPaymentMethod('efectivo')
+
+    try {
+      await processPayment(paymentMethod, {
+        method: paymentMethod,
+        amountPaid: paymentMethod === 'efectivo' ? cashAmount : total,
+        change: paymentMethod === 'efectivo' ? change : undefined,
+        cardLastFour: paymentMethod === 'tarjeta' ? cardLastFour : undefined,
+      })
+
+      toast.current?.show({
+        severity: 'success',
+        summary: 'Venta registrada',
+        detail: 'La venta se registro correctamente',
+        life: 3000,
+      })
+
+      setCashAmount(0)
+      setCardLastFour('')
+      setPaymentMethod('efectivo')
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Error registrando la venta'
+      toast.current?.show({
+        severity: 'error',
+        summary: 'Error de API',
+        detail: message,
+        life: 5000,
+      })
+    } finally {
+      setIsProcessing(false)
+    }
   }
 
   const quickCashAmounts = [10000, 20000, 50000, 100000, 200000]

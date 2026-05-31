@@ -9,6 +9,7 @@ import {
   createCartItem,
   updateCartItemQuantity,
 } from '../domain/pos/pricing'
+import { registerSale } from '../infrastructure/sales/salesRepository'
 import { loadPersistedSnapshot, savePersistedSnapshot } from '../infrastructure/storage/posStorage'
 import { CartItem, Discount, PaymentDetails, PaymentMethod, Product, Transaction } from '../types'
 
@@ -29,7 +30,7 @@ interface POSState {
   isCheckoutOpen: boolean
   openCheckout: () => void
   closeCheckout: () => void
-  processPayment: (method: PaymentMethod, details: PaymentDetails) => Transaction
+  processPayment: (method: PaymentMethod, details: PaymentDetails) => Promise<Transaction>
 
   // Transaction history
   transactions: Transaction[]
@@ -132,7 +133,7 @@ export const usePOSStore = create<POSState>((set, get) => ({
 
   closeCheckout: () => set({ isCheckoutOpen: false }),
 
-  processPayment: (method: PaymentMethod, details: PaymentDetails): Transaction => {
+  processPayment: async (method: PaymentMethod, details: PaymentDetails): Promise<Transaction> => {
     const { cart, appliedDiscount } = get()
 
     const transaction = createTransaction({
@@ -142,6 +143,8 @@ export const usePOSStore = create<POSState>((set, get) => ({
       details,
       cashier: 'Cajero 1',
     })
+
+    await registerSale(transaction)
 
     set((state) => ({
       transactions: [...state.transactions, transaction],
