@@ -144,18 +144,24 @@ export const usePOSStore = create<POSState>((set, get) => ({
       cashier: 'Cajero 1',
     })
 
-    await registerSale(transaction)
+    const saleResponse = await registerSale(transaction)
+
+    const confirmedTransaction: Transaction = {
+      ...transaction,
+      id: saleResponse.ventaId,
+      total: saleResponse.total,
+    }
 
     set((state) => ({
-      transactions: [...state.transactions, transaction],
-      currentReceipt: transaction,
+      transactions: [...state.transactions, confirmedTransaction],
+      currentReceipt: confirmedTransaction,
       cart: [],
       appliedDiscount: null,
       isCheckoutOpen: false,
     }))
 
     persistStateFromStore(get)
-    return transaction
+    return confirmedTransaction
   },
 
   // Transaction History

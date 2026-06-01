@@ -118,7 +118,7 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Ingresa tu contraseña"
-              className="w-full"
+              className="w-full pos-login-password"
               inputClassName="w-full"
               toggleMask
               feedback={false}

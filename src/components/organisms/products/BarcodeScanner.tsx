@@ -1,7 +1,7 @@
 import { InputText } from 'primereact/inputtext'
 import { Button } from 'primereact/button'
 import { Dialog } from 'primereact/dialog'
-import { KeyboardEvent, useEffect, useRef, useState } from 'react'
+import { KeyboardEvent, useEffect, useRef, useState, forwardRef, useImperativeHandle, useCallback } from 'react'
 import type { BrowserMultiFormatReader, IScannerControls } from '@zxing/browser'
 
 interface BarcodeScannerProps {
@@ -11,21 +11,25 @@ interface BarcodeScannerProps {
   onCameraError?: (message: string) => void
 }
 
+export interface BarcodeScannerHandle {
+  focusInput: () => void
+  openCamera: () => void
+}
+
 type BrowserWindow = Window & {
   BarcodeDetector?: new (options?: { formats: string[] }) => {
     detect: (input: HTMLVideoElement) => Promise<Array<{ rawValue?: string }>>
   }
 }
 
-export default function BarcodeScanner({
-  value,
-  onChange,
-  onSubmit,
-  onCameraError,
-}: BarcodeScannerProps) {
+const BarcodeScanner = forwardRef<BarcodeScannerHandle, BarcodeScannerProps>(function BarcodeScanner(
+  { value, onChange, onSubmit, onCameraError },
+  ref,
+) {
   const [isCameraOpen, setIsCameraOpen] = useState(false)
   const [isCameraLoading, setIsCameraLoading] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
+  const barcodeInputRef = useRef<HTMLInputElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
   const scannerControlsRef = useRef<IScannerControls | null>(null)
   const zxingReaderRef = useRef<BrowserMultiFormatReader | null>(null)
@@ -38,7 +42,7 @@ export default function BarcodeScanner({
     }
   }
 
-  const stopCamera = () => {
+  const stopCamera = useCallback(() => {
     if (frameIdRef.current) {
       cancelAnimationFrame(frameIdRef.current)
       frameIdRef.current = null
@@ -52,7 +56,7 @@ export default function BarcodeScanner({
     hasScannedRef.current = false
     setIsCameraOpen(false)
     setIsCameraLoading(false)
-  }
+  }, [])
 
   const getVideoElement = async (): Promise<HTMLVideoElement | null> => {
     for (let attempt = 0; attempt < 15; attempt += 1) {
@@ -62,7 +66,7 @@ export default function BarcodeScanner({
     return null
   }
 
-  const startCamera = async () => {
+  const startCamera = useCallback(async () => {
     if (isCameraOpen || isCameraLoading) return
     const browserWindow = window as BrowserWindow
     const BarcodeDetectorCtor = browserWindow.BarcodeDetector
@@ -151,17 +155,24 @@ export default function BarcodeScanner({
       onCameraError?.('No fue posible abrir la camara. Revisa permisos del navegador.')
       stopCamera()
     }
-  }
+  }, [isCameraOpen, isCameraLoading, onCameraError, onSubmit, stopCamera])
+
+  // Exponer métodos al padre via ref — definido después de startCamera
+  useImperativeHandle(ref, () => ({
+    focusInput: () => barcodeInputRef.current?.focus(),
+    openCamera: () => { void startCamera() },
+  }), [startCamera])
 
   useEffect(() => {
     return () => { stopCamera() }
-  }, [])
+  }, [stopCamera])
 
   return (
     <>
       <div className="flex align-items-center gap-2">
         <span className="p-input-icon-left pos-barcode-input">
           <InputText
+            ref={barcodeInputRef}
             value={value}
             onChange={(e) => onChange(e.target.value)}
             onKeyDown={handleKeyDown}
@@ -180,7 +191,7 @@ export default function BarcodeScanner({
         <Button
           icon="pi pi-qrcode"
           className="p-button-outlined"
-          tooltip="Escanear con camara"
+          tooltip="Escanear con camara (F4)"
           tooltipOptions={{ position: 'bottom' }}
           onClick={() => { void startCamera() }}
           style={{
@@ -227,4 +238,6 @@ export default function BarcodeScanner({
       </Dialog>
     </>
   )
-}
+})
+
+export default BarcodeScanner

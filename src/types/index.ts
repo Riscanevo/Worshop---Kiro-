@@ -104,3 +104,16 @@ export interface LogFilters {
   status?: number
   search?: string
 }
+
+export interface SaleResponse {
+  ventaId: string
+  estado: string
+  total: number
+  items: Array<{
+    productoId: string
+    nombre: string
+    cantidad: number
+    precioUnitario: number
+    subtotal: number
+  }>
+}

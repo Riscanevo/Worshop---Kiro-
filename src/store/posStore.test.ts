@@ -7,7 +7,12 @@ vi.mock('uuid', () => ({
 }))
 
 vi.mock('../infrastructure/sales/salesRepository', () => ({
-  registerSale: vi.fn().mockResolvedValue(undefined),
+  registerSale: vi.fn().mockResolvedValue({
+    ventaId: 'test-transaction-id',
+    estado: 'REGISTRADA',
+    total: 10,
+    items: [],
+  }),
 }))
 
 const productWithTax: Product = {

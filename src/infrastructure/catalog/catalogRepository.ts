@@ -40,7 +40,14 @@ export const getProducts = async (): Promise<Product[]> => {
   const response = await fetch(buildApiUrl('/productos'))
 
   if (!response.ok) {
-    throw new Error('No se pudieron cargar los productos')
+    let message = 'No se pudieron cargar los productos'
+    try {
+      const errorBody = await response.json() as { message?: string }
+      if (errorBody.message) message = errorBody.message
+    } catch {
+      // ignore if body is not JSON
+    }
+    throw new Error(message)
   }
 
   const payload = (await response.json()) as ProductApiResponse

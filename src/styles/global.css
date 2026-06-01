@@ -65,6 +65,10 @@ body {
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
 }
 
+.pos-login-password .p-icon-field > .p-input-icon:last-of-type {
+  top: calc(35% - 3px);
+}
+
 .p-card {
   background-color: var(--pos-bg-secondary);
   border: 1px solid var(--pos-border);

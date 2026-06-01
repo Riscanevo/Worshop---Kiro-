@@ -61,15 +61,16 @@ export const authService: AuthService = {
     // Simular delay de red
     await new Promise((resolve) => setTimeout(resolve, 800))
 
+    // Intenta pasar por el interceptor HTTP de dev tools; si falla, se ignora
     try {
       await simulateLoginRequest(username)
     } catch {
-      throw new Error('Error de conexión. Intente nuevamente')
+      // No bloquear el login si el fetch al data URI falla (algunos navegadores lo rechazan)
     }
 
-    const mockUser = mockUsers[username.toLowerCase()]
+    const mockUser = mockUsers[username.trim().toLowerCase()]
 
-    if (!mockUser || mockUser.password !== password) {
+    if (!mockUser || mockUser.password !== password.trim()) {
       throw new Error('Usuario o contraseña incorrectos')
     }
 
