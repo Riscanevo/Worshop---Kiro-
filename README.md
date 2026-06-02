@@ -294,7 +294,6 @@ Después de iniciar el servidor, abrir la URL local en el navegador y verificar 
 
 ## Capturas de pantalla
 
-> Las siguientes secciones están reservadas para evidencias visuales del sistema funcionando. Agregar aquí las capturas finales del proyecto.
 
 ### Login
 
