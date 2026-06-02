@@ -1,0 +1,9 @@
+
+ RUN  v4.1.6 /home/dev_eduardo/Descargas/pos-frontend-con-react
+
+
+ Test Files  1 passed (1)
+      Tests  6 passed (6)
+   Start at  15:00:35
+   Duration  1.50s (transform 101ms, setup 104ms, import 72ms, tests 19ms, environment 964ms)
+
