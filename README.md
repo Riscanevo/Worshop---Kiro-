@@ -295,21 +295,30 @@ Después de iniciar el servidor, abrir la URL local en el navegador y verificar 
 ## Capturas de pantalla
 
 > Las siguientes secciones están reservadas para evidencias visuales del sistema funcionando. Agregar aquí las capturas finales del proyecto.
+
 ### Login
-![alt text](image.png)
+
+![Pantalla de login del sistema POS](screenshots/image.png)
+
 ### 1. Listado de productos cargado desde el API
-![alt text](image-2.png)
-catálogo mostrando productos obtenidos desde `GET /productos`.
+
+![Listado de productos cargado desde el API](screenshots/image-2.png)
+
+Catálogo mostrando productos obtenidos desde `GET /productos`.
 
 ### 2. Registro de una venta exitosa con respuesta del API visible
-![alt text](image-3.png)
 
-![alt text](image-4.png)
-flujo de checkout o recibo mostrando una venta registrada correctamente y la respuesta confirmada por el API, incluyendo datos como `ventaId`, `estado` o `total`.
+![Registro de venta exitosa en el POS](screenshots/image-3.png)
+
+![Respuesta del API visible después de registrar la venta](screenshots/image-4.png)
+
+Flujo de checkout o recibo mostrando una venta registrada correctamente y la respuesta confirmada por el API, incluyendo datos como `ventaId`, `estado` o `total`.
 
 ### 3. Manejo de un error del API
-![alt text](image-5.png)
-respuesta inválida o error HTTP por credenciales incorrectas al iniciar sesion, mostrando el mensaje visible para el usuario.
+
+![Manejo de error del API en el sistema POS](screenshots/image-5.png)
+
+Respuesta inválida o error HTTP por credenciales incorrectas al iniciar sesión, mostrando el mensaje visible para el usuario.
 
 ## Proceso SDD
 
